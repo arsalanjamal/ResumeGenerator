@@ -1,4 +1,4 @@
-import streamlit as stimport streamlit as st
+import streamlit as st
 from transformers import pipeline
 from fpdf import FPDF
 from io import BytesIO
