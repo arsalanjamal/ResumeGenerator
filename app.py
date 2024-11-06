@@ -7,9 +7,6 @@ import re
 # Load pre-trained model for resume generation
 pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generation")
 
-# Load Hugging Face translation model with bfloat16 support for better performance
-translator_fr = pipeline("translation", model="facebook/nllb-200-distilled-600M")
-
 # Function to extract keywords from the job description
 def extract_keywords(job_description):
     keywords = set(re.findall(r'\b\w+\b', job_description.lower()))
@@ -107,28 +104,19 @@ def main():
     # Add Job Description Input (Optional)
     job_description = st.text_area("Job Description (Optional)", key="job_description")
 
-    # Language selection dropdown (only English and French)
-    language = st.selectbox("Select Resume Language", ("English", "French"))
-
     # Button to generate resume
     if st.button("Generate Resume", key="generate_resume"):
         if name and job_role and education and skills and experience and phone and email and linkedin and address:
             # Generate the resume text
             resume_text = generate_resume(name, job_role, education, skills, experience, job_description)
 
-            # Translate resume based on user choice (only French support here)
-            if language == "French":
-                translated_resume = translator_fr(resume_text, src_lang="en", tgt_lang="fr")[0]['translation_text']
-            else:
-                translated_resume = resume_text  # English is default
-
             # Display generated resume
-            st.subheader(f"Generated Resume in {language}")
-            st.write(translated_resume)
+            st.subheader("Generated Resume")
+            st.write(resume_text)
 
             # Export option
-            pdf_output = export_to_pdf(name, job_role, translated_resume, education, skills, experience, phone, email, linkedin, address)
-            st.download_button(f"Download Resume in {language}", pdf_output, file_name=f"{name}_Resume_{language}.pdf")
+            pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
+            st.download_button(f"Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
         else:
             st.error("Please fill in all fields to generate a resume.")
 
