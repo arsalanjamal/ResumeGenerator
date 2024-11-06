@@ -7,8 +7,8 @@ import re
 # Load pre-trained model for resume generation
 pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generation")
 
-# Load Hugging Face translation models for English and French only
-translator_fr = pipeline("translation", model="Helsinki-NLP/opus-mt-en-fr")
+# Load Hugging Face translation model with bfloat16 support for better performance
+translator_fr = pipeline("translation", model="facebook/nllb-200-distilled-600M", torch_dtype=torch.bfloat16)
 
 # Function to extract keywords from the job description
 def extract_keywords(job_description):
@@ -118,7 +118,7 @@ def main():
 
             # Translate resume based on user choice (only French support here)
             if language == "French":
-                translated_resume = translator_fr(resume_text)[0]['translation_text']
+                translated_resume = translator_fr(resume_text, src_lang="en", tgt_lang="fr")[0]['translation_text']
             else:
                 translated_resume = resume_text  # English is default
 
