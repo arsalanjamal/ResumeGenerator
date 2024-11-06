@@ -7,10 +7,8 @@ import re
 # Load pre-trained model for resume generation
 pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generation")
 
-# Load Hugging Face translation models
+# Load Hugging Face translation models for English and French only
 translator_fr = pipeline("translation", model="Helsinki-NLP/opus-mt-en-fr")
-translator_de = pipeline("translation", model="Helsinki-NLP/opus-mt-en-de")
-translator_ar = pipeline("translation", model="Helsinki-NLP/opus-mt-en-ar")
 
 # Function to extract keywords from the job description
 def extract_keywords(job_description):
@@ -109,8 +107,8 @@ def main():
     # Add Job Description Input
     job_description = st.text_area("Job Description (Optional)", key="job_description")
 
-    # Language selection dropdown
-    language = st.selectbox("Select Resume Language", ("English", "French", "German", "Arabic"))
+    # Language selection dropdown (only English and French)
+    language = st.selectbox("Select Resume Language", ("English", "French"))
 
     # Button to generate resume
     if st.button("Generate Resume", key="generate_resume"):
@@ -118,13 +116,9 @@ def main():
             # Generate the resume text
             resume_text = generate_resume(name, job_role, education, skills, experience, job_description)
 
-            # Translate resume based on user choice
+            # Translate resume based on user choice (only French support here)
             if language == "French":
                 translated_resume = translator_fr(resume_text)[0]['translation_text']
-            elif language == "German":
-                translated_resume = translator_de(resume_text)[0]['translation_text']
-            elif language == "Arabic":
-                translated_resume = translator_ar(resume_text)[0]['translation_text']
             else:
                 translated_resume = resume_text  # English is default
 
