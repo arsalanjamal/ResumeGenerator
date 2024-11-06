@@ -1,4 +1,3 @@
-# Import necessary libraries
 import streamlit as st
 from transformers import pipeline
 from fpdf import FPDF
@@ -9,32 +8,55 @@ pipe = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generatio
 
 # Function to generate the resume
 def generate_resume(name, job_role, education, skills, experience):
-    input_text = f"Generate a resume for a {job_role}. The person’s name is {name}, with education in {education}. The person has the following skills: {skills}. The experience includes: {experience}."
+    input_text = f"Generate a professional resume for a {job_role}. The person’s name is {name}, with education in {education}. The person has the following skills: {skills}. The experience includes: {experience}."
     
     # Use Hugging Face pipeline for text generation
     resume = pipe(input_text)[0]['generated_text']
     return resume
 
-# Function to export the resume to PDF
-def export_to_pdf(name, job_role, resume_text):
+# Function to export the resume to a professional PDF
+def export_to_pdf(name, job_role, resume_text, education, skills, experience):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Set font
+    # Set font for the resume
+    pdf.set_font("Arial", size=16, style='B')
+    
+    # Add Name and Job Title (Header)
+    pdf.cell(200, 10, txt=name, ln=True, align="C")
     pdf.set_font("Arial", size=12)
-
-    # Add Title
-    pdf.cell(200, 10, txt=f"Resume of {name}", ln=True, align="C")
-    pdf.ln(10)  # Line break
-
-    # Add job role
-    pdf.cell(200, 10, txt=f"Job Role: {job_role}", ln=True, align="L")
+    pdf.cell(200, 10, txt=f"Job Role: {job_role}", ln=True, align="C")
+    pdf.ln(10)
+    
+    # Add Professional Summary
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(200, 10, txt="Professional Summary", ln=True, align="L")
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt=resume_text)
+    pdf.ln(10)
+    
+    # Add Education Section
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(200, 10, txt="Education", ln=True, align="L")
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt=education)
     pdf.ln(10)
 
-    # Add resume content
-    pdf.multi_cell(0, 10, txt=resume_text)
+    # Add Skills Section
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(200, 10, txt="Skills", ln=True, align="L")
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt=f"- {skills.replace(',', '\n- ')}")
+    pdf.ln(10)
 
+    # Add Experience Section
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(200, 10, txt="Experience", ln=True, align="L")
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt=f"- {experience.replace(',', '\n- ')}")
+    pdf.ln(10)
+    
     # Save the PDF to a BytesIO object
     pdf_output = BytesIO()
     pdf_output.write(pdf.output(dest="S").encode("latin1"))  # Output as string, then write to BytesIO
@@ -44,7 +66,7 @@ def export_to_pdf(name, job_role, resume_text):
 
 # Streamlit interface
 def main():
-    st.title("Resume Generation App")
+    st.title("Professional Resume Generation App")
 
     # Collect user information
     st.header("Enter Your Information")
@@ -65,7 +87,7 @@ def main():
             st.write(resume_text)
 
             # Export option
-            pdf_output = export_to_pdf(name, job_role, resume_text)
+            pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience)
             st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
         else:
             st.error("Please fill in all fields to generate a resume.")
