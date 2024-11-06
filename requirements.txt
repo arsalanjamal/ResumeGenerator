@@ -4,3 +4,4 @@ fpdf
 pyngrok
 tensorflow
 tf-keras
+sentencepiece
