@@ -4,9 +4,8 @@ from fpdf import FPDF
 from io import BytesIO
 import re
 
-# Load pre-trained models for resume and cover letter generation
+# Load pre-trained model for resume generation
 pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generation")
-pipe_cover_letter = pipeline("text2text-generation", model="mrm8488/t5-base-finetuned-cover-letter")
 
 # Function to extract keywords from the job description
 def extract_keywords(job_description):
@@ -25,17 +24,8 @@ def generate_resume(name, job_role, education, skills, experience, job_descripti
     resume = pipe_resume(input_text)[0]['generated_text']
     return resume
 
-# Function to generate the cover letter
-def generate_cover_letter(name, job_role, skills, experience, job_description):
-    # Construct a prompt for cover letter generation
-    prompt = f"Write a professional cover letter for {name}, applying for the role of {job_role}. They have the following skills: {skills}. Their experience includes: {experience}. The job description is: {job_description}. Write a formal and personalized cover letter."
-    
-    # Generate cover letter text using the model
-    cover_letter = pipe_cover_letter(prompt)[0]['generated_text']
-    return cover_letter
-
-# Function to export the resume and cover letter to a professional PDF
-def export_to_pdf(name, job_role, resume_text, cover_letter_text, education, skills, experience, phone, email, linkedin, address):
+# Function to export the resume to a professional PDF
+def export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -86,14 +76,6 @@ def export_to_pdf(name, job_role, resume_text, cover_letter_text, education, ski
     pdf.multi_cell(0, 10, txt=f"- {experience.replace(',', '\n- ')}")
     pdf.ln(10)
 
-    # Add Cover Letter Section
-    pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="COVER LETTER", ln=True, align="L")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=cover_letter_text)
-    pdf.ln(10)
-    
     # Save the PDF to a BytesIO object
     pdf_output = BytesIO()
     pdf_output.write(pdf.output(dest="S").encode("latin1"))
@@ -103,7 +85,7 @@ def export_to_pdf(name, job_role, resume_text, cover_letter_text, education, ski
 
 # Streamlit interface
 def main():
-    st.title("ATS OPTIMIZED RESUME & COVER LETTER GENERATOR")
+    st.title("ATS OPTIMIZED RESUME GENERATOR")
 
     # Collect user information
     st.header("Enter Your Information")
@@ -122,24 +104,21 @@ def main():
     # Add Job Description Input
     job_description = st.text_area("Job Description (Optional)", key="job_description")
 
-    # Button to generate resume and cover letter
-    if st.button("Generate Resume & Cover Letter", key="generate_resume_cover_letter"):
+    # Button to generate resume
+    if st.button("Generate Resume", key="generate_resume"):
         if name and job_role and education and skills and experience and phone and email and linkedin and address:
-            # Generate the resume and cover letter text
+            # Generate the resume text
             resume_text = generate_resume(name, job_role, education, skills, experience, job_description)
-            cover_letter_text = generate_cover_letter(name, job_role, skills, experience, job_description)
 
-            # Display generated resume and cover letter
+            # Display generated resume
             st.subheader("Generated Resume")
             st.write(resume_text)
-            st.subheader("Generated Cover Letter")
-            st.write(cover_letter_text)
 
             # Export option
-            pdf_output = export_to_pdf(name, job_role, resume_text, cover_letter_text, education, skills, experience, phone, email, linkedin, address)
-            st.download_button("Download Resume & Cover Letter", pdf_output, file_name=f"{name}_Resume_Cover_Letter.pdf")
+            pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
+            st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
         else:
-            st.error("Please fill in all fields to generate a resume and cover letter.")
+            st.error("Please fill in all fields to generate a resume.")
 
 if __name__ == "__main__":
     main()
