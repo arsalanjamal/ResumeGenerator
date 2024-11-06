@@ -3,3 +3,4 @@ transformers
 fpdf
 pyngrok
 tensorflow
+tf-keras
