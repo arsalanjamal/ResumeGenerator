@@ -89,10 +89,7 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience, ph
     return pdf_output
 
 # Function to send email with the resume attached
-def send_email(to_email, resume_pdf, name):
-    from_email = "your-email@example.com"  # Replace with your email
-    email_password = "your-email-password"  # Replace with your email password or use an app-specific password
-
+def send_email(from_email, email_password, to_email, resume_pdf, name):
     msg = MIMEMultipart()
     msg['From'] = from_email
     msg['To'] = to_email
@@ -135,16 +132,19 @@ def main():
     
     # Add contact details inputs
     phone = st.text_input("Phone Number", key="phone")
-    email = st.text_input("Email Address", key="email")
+    email = st.text_input("Your Email Address", key="email")
     linkedin = st.text_input("LinkedIn Profile", key="linkedin")
     address = st.text_input("Home Address", key="address")
     
     # Add Job Description Input
     job_description = st.text_area("Job Description (Optional)", key="job_description")
 
+    # Collect email to send resume to
+    recipient_email = st.text_input("Recipient's Email Address", key="recipient_email")
+
     # Button to generate resume
     if st.button("Generate Resume", key="generate_resume"):
-        if name and job_role and education and skills and experience and phone and email and linkedin and address:
+        if name and job_role and education and skills and experience and phone and email and linkedin and address and recipient_email:
             # Generate the resume text
             resume_text = generate_resume(name, job_role, education, skills, experience, job_description)
 
@@ -158,7 +158,9 @@ def main():
 
             # Email me button
             if st.button("Email me", key="email_resume"):
-                send_email(email, pdf_output, name)
+                from_email = "your-email@example.com"  # Replace with your email
+                email_password = "your-email-password"  # Replace with your email password or app-specific password
+                send_email(from_email, email_password, recipient_email, pdf_output, name)
         else:
             st.error("Please fill in all fields to generate a resume.")
 
