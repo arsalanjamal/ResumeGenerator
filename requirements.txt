@@ -5,3 +5,4 @@ pyngrok
 tensorflow
 tf-keras
 sentencepiece
+torch
