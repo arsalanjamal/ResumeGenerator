@@ -3,6 +3,11 @@ from transformers import pipeline
 from fpdf import FPDF
 from io import BytesIO
 import re
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 
 # Load pre-trained model for resume generation
 pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generation")
@@ -83,6 +88,39 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience, ph
 
     return pdf_output
 
+# Function to send email with the resume attached
+def send_email(to_email, resume_pdf, name):
+    from_email = "your-email@example.com"  # Replace with your email
+    email_password = "your-email-password"  # Replace with your email password or use an app-specific password
+
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg['Subject'] = f"Your Resume - {name}"
+
+    body = "Please find attached your resume."
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Attach the PDF file
+    part = MIMEBase('application', 'octet-stream')
+    part.set_payload(resume_pdf.read())
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', f'attachment; filename={name}_Resume.pdf')
+    msg.attach(part)
+
+    try:
+        # Setup the server and send the email
+        server = smtplib.SMTP('smtp.gmail.com', 587)  # Gmail SMTP server
+        server.starttls()
+        server.login(from_email, email_password)
+        text = msg.as_string()
+        server.sendmail(from_email, to_email, text)
+        server.quit()
+        st.success(f"Resume successfully emailed to {to_email}!")
+    except Exception as e:
+        st.error(f"Failed to send email: {e}")
+
 # Streamlit interface
 def main():
     st.title("ATS OPTIMIZED RESUME GENERATOR")
@@ -117,6 +155,10 @@ def main():
             # Export option
             pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
             st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
+
+            # Email me button
+            if st.button("Email me", key="email_resume"):
+                send_email(email, pdf_output, name)
         else:
             st.error("Please fill in all fields to generate a resume.")
 
