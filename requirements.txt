@@ -2,3 +2,4 @@ streamlit
 transformers
 fpdf
 pyngrok
+torch
