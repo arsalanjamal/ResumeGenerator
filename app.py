@@ -42,7 +42,7 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience):
     
     # Add Professional Summary
     pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="Professional Summary", ln=True, align="L")
+    pdf.cell(200, 10, txt="PROFESSIONAL SUMMARY", ln=True, align="L")  # Capitalize heading
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())  # Horizontal line after the title
     pdf.set_font("Arial", size=12)
     pdf.multi_cell(0, 10, txt=resume_text)
@@ -50,7 +50,7 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience):
     
     # Add Education Section
     pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="Education", ln=True, align="L")
+    pdf.cell(200, 10, txt="EDUCATION", ln=True, align="L")  # Capitalize heading
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())  # Horizontal line after the title
     pdf.set_font("Arial", size=12)
     pdf.multi_cell(0, 10, txt=education)
@@ -58,7 +58,7 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience):
 
     # Add Skills Section (ATS optimized)
     pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="Skills", ln=True, align="L")
+    pdf.cell(200, 10, txt="SKILLS", ln=True, align="L")  # Capitalize heading
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())  # Horizontal line after the title
     pdf.set_font("Arial", size=12)
     pdf.multi_cell(0, 10, txt=f"- {skills.replace(',', '\n- ')}")
@@ -66,7 +66,7 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience):
 
     # Add Experience Section (ATS optimized)
     pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="Experience", ln=True, align="L")
+    pdf.cell(200, 10, txt="EXPERIENCE", ln=True, align="L")  # Capitalize heading
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())  # Horizontal line after the title
     pdf.set_font("Arial", size=12)
     pdf.multi_cell(0, 10, txt=f"- {experience.replace(',', '\n- ')}")
