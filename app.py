@@ -37,7 +37,7 @@ def export_to_pdf(name, job_role, resume_text):
 
     # Save the PDF to a BytesIO object
     pdf_output = BytesIO()
-    pdf.output(pdf_output)
+    pdf_output.write(pdf.output(dest="S").encode("latin1"))  # Output as string, then write to BytesIO
     pdf_output.seek(0)  # Move to the beginning of the BytesIO object for download
 
     return pdf_output
