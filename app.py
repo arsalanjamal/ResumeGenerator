@@ -1,16 +1,26 @@
 import streamlit as st
 from transformers import pipeline
+import time
 
-# Try loading the translation model without the additional complexity
-translator_fr = pipeline("translation", model="facebook/nllb-200-distilled-600M")
+# Load the translation model
+@st.cache_resource
+def load_model():
+    start_time = time.time()
+    translator_fr = pipeline("translation", model="facebook/nllb-200-distilled-600M", torch_dtype=torch.bfloat16)
+    load_time = time.time() - start_time
+    st.write(f"Model loaded in {load_time} seconds.")
+    return translator_fr
 
 def main():
     st.title("Test Translation Model")
 
-    # Test the translation model with a simple input
+    # Load model
+    translator_fr = load_model()
+
     if st.button("Translate Text"):
         text = "Hello, how are you?"
-        translation = translator_fr(text, src_lang="en", tgt_lang="fr")
+        with st.spinner("Translating..."):
+            translation = translator_fr(text, src_lang="en", tgt_lang="fr")
         st.write(f"Translation: {translation[0]['translation_text']}")
 
 if __name__ == "__main__":
