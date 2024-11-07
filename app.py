@@ -23,17 +23,24 @@ def generate_resume_section(section_name, details, job_role, keywords):
     generated_text = pipe_resume(prompt)[0]['generated_text']
     return generated_text
 
+# Function to generate the Professional Summary with improved structure
+def generate_professional_summary(name, job_role, education, experience, skills, job_description):
+    keywords = extract_keywords(job_description)
+    prompt = (
+        f"Write a professional summary for a {job_role} with the following background: "
+        f"Name: {name}, Education: {education}, Experience: {experience}, Skills: {skills}. "
+        f"Focus on these aspects: career goals, expertise in the field, and notable achievements. "
+        f"Make it concise, clear, and tailored to the job role, using the following keywords: {', '.join(keywords)}."
+    )
+    summary = pipe_resume(prompt)[0]['generated_text']
+    return summary
+
 # Function to generate all sections of the resume
 def generate_resume(name, job_role, education, skills, experience, job_description):
     keywords = extract_keywords(job_description)
-    
-    # Prompts for each section with job-specific, optimized wording
-    summary = generate_resume_section(
-        "Professional Summary",
-        f"{name} is applying for a {job_role} role with education in {education} and experience in {experience}",
-        job_role,
-        keywords
-    )
+
+    # Generate each section with enhanced clarity
+    summary = generate_professional_summary(name, job_role, education, experience, skills, job_description)
 
     skills_text = generate_resume_section(
         "Skills section",
