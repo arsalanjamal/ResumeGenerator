@@ -12,35 +12,26 @@ def extract_keywords(job_description):
     keywords = set(re.findall(r'\b\w+\b', job_description.lower()))
     return keywords
 
-# Function to generate each section of the resume
-def generate_resume_sections(name, job_role, education, skills, experience, job_description):
+# Function to generate the resume
+def generate_resume(name, job_role, education, skills, experience, job_description):
+    # Extract keywords from the job description
     keywords = extract_keywords(job_description)
-
-    # Generate Professional Summary
-    summary_prompt = f"Generate a professional summary for a {job_role} named {name} with skills in {skills}. Focus on relevant keywords: {', '.join(keywords)}."
-    summary_text = pipe_resume(summary_prompt)[0]['generated_text']
-
-    # Generate Skills Section
-    skills_prompt = f"Generate a list of key skills for a {job_role} with experience in {skills}. Include skills matching the job description keywords: {', '.join(keywords)}."
-    skills_text = pipe_resume(skills_prompt)[0]['generated_text']
-
-    # Generate Experience Section
-    experience_prompt = f"Generate detailed work experience for a {job_role} with past experience in {experience}. Emphasize accomplishments and responsibilities."
-    experience_text = pipe_resume(experience_prompt)[0]['generated_text']
-
-    # Generate Education Section
-    education_prompt = f"Generate an education section for someone with a background in {education}."
-    education_text = pipe_resume(education_prompt)[0]['generated_text']
-
-    return {
-        "summary": summary_text,
-        "skills": skills_text,
-        "experience": experience_text,
-        "education": education_text,
-    }
+    
+    # Use a prompt that encourages a narrative format for the Professional Summary
+    input_text = (
+        f"Generate a professional resume with a summary in complete sentences for a {job_role}. "
+        f"The candidate’s name is {name}, with education in {education}. "
+        f"They possess skills such as {skills}, and have experience including {experience}. "
+        f"Focus the summary on these keywords from the job description: {', '.join(keywords)}. "
+        "The summary should be written as full sentences, emphasizing achievements and strengths."
+    )
+    
+    # Generate the resume content using the model
+    resume = pipe_resume(input_text)[0]['generated_text']
+    return resume
 
 # Function to export the resume to PDF with a background color
-def export_to_pdf(name, job_role, sections, phone, email, linkedin, address, background_color="white"):
+def export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address, background_color="white"):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -68,28 +59,12 @@ def export_to_pdf(name, job_role, sections, phone, email, linkedin, address, bac
     pdf.cell(200, 10, txt=f"Phone: {phone} | Email: {email} | LinkedIn: {linkedin} | Address: {address}", ln=True, align="C")
     pdf.ln(10)
 
-    # Add Professional Summary
+    # Add Professional Summary Section
     pdf.set_font("Arial", style='B', size=12)
     pdf.cell(200, 10, txt="PROFESSIONAL SUMMARY", ln=True, align="L")
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=sections["summary"])
-    pdf.ln(10)
-
-    # Add Skills Section
-    pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="SKILLS", ln=True, align="L")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=sections["skills"])
-    pdf.ln(10)
-
-    # Add Experience Section
-    pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="EXPERIENCE", ln=True, align="L")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=sections["experience"])
+    pdf.multi_cell(0, 10, txt=resume_text)
     pdf.ln(10)
 
     # Add Education Section
@@ -97,7 +72,23 @@ def export_to_pdf(name, job_role, sections, phone, email, linkedin, address, bac
     pdf.cell(200, 10, txt="EDUCATION", ln=True, align="L")
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=sections["education"])
+    pdf.multi_cell(0, 10, txt=education)
+    pdf.ln(10)
+
+    # Add Skills Section
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(200, 10, txt="SKILLS", ln=True, align="L")
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt=f"- {skills.replace(',', '\n- ')}")
+    pdf.ln(10)
+
+    # Add Experience Section
+    pdf.set_font("Arial", style='B', size=12)
+    pdf.cell(200, 10, txt="EXPERIENCE", ln=True, align="L")
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt=f"- {experience.replace(',', '\n- ')}")
     pdf.ln(10)
 
     # Save the PDF to a BytesIO object
@@ -134,16 +125,13 @@ def main():
     # Button to generate resume
     if st.button("Generate Resume", key="generate_resume"):
         if name and job_role and education and skills and experience and phone and email and linkedin and address:
-            # Generate each resume section
-            sections = generate_resume_sections(name, job_role, education, skills, experience, job_description)
+            resume_text = generate_resume(name, job_role, education, skills, experience, job_description)
 
             st.subheader("Generated Resume")
-            for section, content in sections.items():
-                st.subheader(section.capitalize())
-                st.write(content)
+            st.write(resume_text)
 
             # Export and download PDF
-            pdf_output = export_to_pdf(name, job_role, sections, phone, email, linkedin, address, background_color)
+            pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address, background_color)
             st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
         else:
             st.error("Please fill in all fields to generate a resume.")
