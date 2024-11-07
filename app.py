@@ -12,37 +12,56 @@ def extract_keywords(job_description):
     keywords = set(re.findall(r'\b\w+\b', job_description.lower()))
     return keywords
 
-# Function to generate individual sections of the resume
-def generate_resume_section(prompt):
-    return pipe_resume(prompt)[0]['generated_text']
+# Function to generate individual resume sections
+def generate_resume_section(section_name, details, job_role, keywords):
+    prompt = (
+        f"Create a {section_name} for a resume tailored to a '{job_role}' role. "
+        f"The details are: {details}. "
+        f"Focus on these keywords: {', '.join(keywords)}. "
+        f"Write in a professional tone suitable for an ATS-optimized resume."
+    )
+    generated_text = pipe_resume(prompt)[0]['generated_text']
+    return generated_text
 
-# Main function to generate the resume
+# Function to generate all sections of the resume
 def generate_resume(name, job_role, education, skills, experience, job_description):
-    # Extract keywords from the job description
     keywords = extract_keywords(job_description)
-    keywords_text = ', '.join(keywords)
+    
+    # Prompts for each section with job-specific, optimized wording
+    summary = generate_resume_section(
+        "Professional Summary",
+        f"{name} is applying for a {job_role} role with education in {education} and experience in {experience}",
+        job_role,
+        keywords
+    )
 
-    # Generate each section of the resume
-    summary_prompt = f"Generate a professional summary for a {job_role}. The person’s name is {name}, with education in {education} and skills in {skills}. They have experience in {experience}. Focus on these keywords: {keywords_text}."
-    summary = generate_resume_section(summary_prompt)
+    skills_text = generate_resume_section(
+        "Skills section",
+        f"The applicant has skills in {skills}",
+        job_role,
+        keywords
+    )
 
-    skills_prompt = f"Generate a detailed skills section for a {job_role} with skills in {skills}. Use sentences to describe each skill or skill group."
-    skills_text = generate_resume_section(skills_prompt)
+    experience_text = generate_resume_section(
+        "Experience section",
+        f"The applicant has experience as follows: {experience}",
+        job_role,
+        keywords
+    )
 
-    experience_prompt = f"Generate an experience section for a {job_role} with the following background: {experience}. Focus on key accomplishments and responsibilities."
-    experience_text = generate_resume_section(experience_prompt)
+    education_text = generate_resume_section(
+        "Education section",
+        f"The applicant’s educational background is: {education}",
+        job_role,
+        keywords
+    )
 
-    education_prompt = f"Generate an education section for someone with education in {education}. Include relevant details and achievements if possible."
-    education_text = generate_resume_section(education_prompt)
-
-    # Combine generated sections
-    resume_content = {
+    return {
         "summary": summary,
         "skills": skills_text,
         "experience": experience_text,
-        "education": education_text
+        "education": education_text,
     }
-    return resume_content
 
 # Function to export the resume to PDF with a background color
 def export_to_pdf(name, job_role, resume_content, phone, email, linkedin, address, background_color="white"):
@@ -73,37 +92,14 @@ def export_to_pdf(name, job_role, resume_content, phone, email, linkedin, addres
     pdf.cell(200, 10, txt=f"Phone: {phone} | Email: {email} | LinkedIn: {linkedin} | Address: {address}", ln=True, align="C")
     pdf.ln(10)
 
-    # Add Professional Summary Section
-    pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="PROFESSIONAL SUMMARY", ln=True, align="L")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=resume_content["summary"])
-    pdf.ln(10)
-
-    # Add Skills Section
-    pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="SKILLS", ln=True, align="L")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=resume_content["skills"])
-    pdf.ln(10)
-
-    # Add Experience Section
-    pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="EXPERIENCE", ln=True, align="L")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=resume_content["experience"])
-    pdf.ln(10)
-
-    # Add Education Section
-    pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(200, 10, txt="EDUCATION", ln=True, align="L")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=resume_content["education"])
-    pdf.ln(10)
+    # Add each section to the PDF with headings and separators
+    for section_name, content in resume_content.items():
+        pdf.set_font("Arial", style='B', size=12)
+        pdf.cell(200, 10, txt=section_name.upper(), ln=True, align="L")
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, txt=content)
+        pdf.ln(10)
 
     # Save the PDF to a BytesIO object
     pdf_output = BytesIO()
