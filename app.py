@@ -2,7 +2,6 @@ import streamlit as st
 from transformers import pipeline
 from fpdf import FPDF
 from io import BytesIO
-from docx import Document  # For Word format support
 import re
 
 # Load pre-trained model for resume generation
@@ -88,31 +87,6 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience, ph
 
     return pdf_output
 
-# Function to export the resume to Word format
-def export_to_word(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address):
-    doc = Document()
-    doc.add_heading(name.upper(), 0)
-    doc.add_paragraph(f"Job Role: {job_role.upper()}")
-    doc.add_paragraph(f"Phone: {phone} | Email: {email} | LinkedIn: {linkedin} | Address: {address}")
-    
-    doc.add_heading("PROFESSIONAL SUMMARY", level=1)
-    doc.add_paragraph(resume_text)
-    
-    doc.add_heading("EDUCATION", level=1)
-    doc.add_paragraph(education)
-    
-    doc.add_heading("SKILLS", level=1)
-    doc.add_paragraph(skills.replace(',', '\n'))
-    
-    doc.add_heading("EXPERIENCE", level=1)
-    doc.add_paragraph(experience.replace(',', '\n'))
-    
-    doc_output = BytesIO()
-    doc.save(doc_output)
-    doc_output.seek(0)
-
-    return doc_output
-
 # Streamlit interface
 def main():
     st.title("ATS OPTIMIZED RESUME GENERATOR")
@@ -134,8 +108,7 @@ def main():
     # Add Job Description Input (Optional)
     job_description = st.text_area("Job Description (Optional)", key="job_description")
     
-    # File format and background color selection
-    file_format = st.selectbox("Select File Format", ["PDF", "Word"], key="file_format")
+    # Background color selection
     background_color = st.selectbox("Select Resume Background Color", ["white", "light grey", "blue"], key="background_color")
 
     # Button to generate resume
@@ -146,12 +119,9 @@ def main():
             st.subheader("Generated Resume")
             st.write(resume_text)
 
-            if file_format == "PDF":
-                pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address, background_color)
-                st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
-            else:
-                word_output = export_to_word(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
-                st.download_button("Download Resume", word_output, file_name=f"{name}_Resume.docx")
+            # Export and download PDF
+            pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address, background_color)
+            st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
         else:
             st.error("Please fill in all fields to generate a resume.")
 
