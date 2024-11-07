@@ -111,4 +111,14 @@ def main():
             resume_text = generate_resume(name, job_role, education, skills, experience, job_description)
 
             # Display generated resume
-            st.subheader("Generated R
+            st.subheader("Generated Resume")
+            st.write(resume_text)
+
+            # Export option
+            pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
+            st.download_button(f"Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
+        else:
+            st.error("Please fill in all fields to generate a resume.")
+
+if __name__ == "__main__":
+    main()
