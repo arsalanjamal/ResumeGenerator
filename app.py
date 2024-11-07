@@ -15,7 +15,7 @@ def extract_keywords(job_description):
 # Function to generate the resume
 def generate_resume(name, job_role, education, skills, experience, job_description):
     keywords = extract_keywords(job_description)
-    input_text = f"Generate a professional, ATS-optimized resume for a {job_role}. The person’s name is {name}, with education in {education}. The person has the following skills: {skills}. The experience includes: {experience}. Focus on the following keywords from the job description: {', '.join(keywords)}."
+    input_text = f"Generate a detailed, ATS-optimized professional summary for a {job_role}. The person’s name is {name}. They have {education} and {experience}. They possess skills in {skills}. Focus on their accomplishments such as {', '.join(keywords)}."
     resume = pipe_resume(input_text)[0]['generated_text']
     return resume
 
