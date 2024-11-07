@@ -10,7 +10,7 @@ pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-ge
 # Function to generate the resume
 def generate_resume(name, job_role, education, skills, experience, job_description):
     # Construct a detailed input prompt for the model
-    input_text = f"Generate a detailed, ATS-optimized professional summary for a {job_role}. The person’s name is {name}. They have {education} and {experience}. They possess skills in {skills}. Focus on their accomplishments and expertise in {job_description}. Generate a concise and impactful professional summary that highlights their experience and qualifications."
+    input_text = f"Generate a detailed, ATS-optimized professional summary for an individual applying for the role of {job_role}. The candidate’s name is {name}. The candidate has {education} and {experience}. The candidate possesses skills in {skills}. The job description includes tasks like {job_description}. Generate a concise and impactful professional summary that highlights the candidate’s experience, accomplishments, and qualifications. Focus on the candidate's personal contributions, not a team-based perspective."
     
     # Use the model to generate the professional summary
     resume = pipe_resume(input_text)[0]['generated_text']
