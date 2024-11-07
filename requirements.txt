@@ -2,10 +2,6 @@ streamlit
 transformers
 fpdf
 pyngrok
-tensorflow
-tf-keras
-sentencepiece
-tensorflow
 torch
 torchvision
 sentencepiece
