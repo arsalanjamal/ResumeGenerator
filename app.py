@@ -24,6 +24,13 @@ def generate_resume(name, job_role, education, skills, experience, job_descripti
     resume = pipe_resume(input_text)[0]['generated_text']
     return resume
 
+# Function to generate mock interview questions
+def generate_mock_interview(job_role):
+    # Customize input for generating interview questions
+    interview_prompt = f"Generate 100 mock interview questions for a job role of {job_role}."
+    interview_questions = pipe_resume(interview_prompt)[0]['generated_text']
+    return interview_questions
+
 # Function to export the resume to a professional PDF
 def export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address):
     pdf = FPDF()
@@ -116,9 +123,21 @@ def main():
 
             # Export option
             pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
-            st.download_button(f"Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
+            st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
         else:
             st.error("Please fill in all fields to generate a resume.")
+
+    # Option to generate mock interview questions
+    if st.button("Generate Mock Interview Questions", key="generate_mock_interview"):
+        if job_role:
+            # Generate mock interview questions
+            interview_questions = generate_mock_interview(job_role)
+            
+            # Display mock interview questions
+            st.subheader("Mock Interview Questions")
+            st.write(interview_questions)
+        else:
+            st.error("Please specify the Job Role to generate mock interview questions.")
 
 if __name__ == "__main__":
     main()
