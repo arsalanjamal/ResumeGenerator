@@ -2,6 +2,7 @@ import streamlit as st
 from transformers import pipeline
 from fpdf import FPDF
 from io import BytesIO
+from docx import Document  # New import for DOCX support
 import re
 
 # Load pre-trained model for resume generation
@@ -14,21 +15,25 @@ def extract_keywords(job_description):
 
 # Function to generate the resume
 def generate_resume(name, job_role, education, skills, experience, job_description):
-    # Extract keywords from the job description
     keywords = extract_keywords(job_description)
-    
-    # Prepare resume content with job description-based keyword focus
     input_text = f"Generate a professional, ATS-optimized resume for a {job_role}. The person’s name is {name}, with education in {education}. The person has the following skills: {skills}. The experience includes: {experience}. Focus on the following keywords from the job description: {', '.join(keywords)}."
-    
-    # Use Hugging Face pipeline for text generation
     resume = pipe_resume(input_text)[0]['generated_text']
     return resume
 
-# Function to export the resume to a professional PDF
-def export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address):
+# Function to export the resume to PDF with a background color
+def export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address, background_color="white"):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
+    pdf.set_fill_color(255, 255, 255)  # Default white
+
+    # Set background color based on selection
+    if background_color == "light grey":
+        pdf.set_fill_color(240, 240, 240)
+    elif background_color == "blue":
+        pdf.set_fill_color(230, 240, 255)
+
+    pdf.rect(0, 0, 210, 297, 'F')  # Apply background color
 
     # Set font for the resume
     pdf.set_font("Arial", size=16, style='B')
@@ -39,11 +44,11 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience, ph
     pdf.cell(200, 10, txt=f"Job Role: {job_role.upper()}", ln=True, align="C")
     pdf.ln(10)
 
-    # Add Contact Info (Phone, Email, LinkedIn, Address)
+    # Add Contact Info
     pdf.set_font("Arial", size=10)
     pdf.cell(200, 10, txt=f"Phone: {phone} | Email: {email} | LinkedIn: {linkedin} | Address: {address}", ln=True, align="C")
     pdf.ln(10)
-    
+
     # Add Professional Summary Section
     pdf.set_font("Arial", style='B', size=12)
     pdf.cell(200, 10, txt="PROFESSIONAL SUMMARY", ln=True, align="L")
@@ -83,6 +88,31 @@ def export_to_pdf(name, job_role, resume_text, education, skills, experience, ph
 
     return pdf_output
 
+# Function to export the resume to DOCX
+def export_to_docx(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address):
+    doc = Document()
+    doc.add_heading(name.upper(), 0)
+    doc.add_paragraph(f"Job Role: {job_role.upper()}")
+    doc.add_paragraph(f"Phone: {phone} | Email: {email} | LinkedIn: {linkedin} | Address: {address}")
+    
+    doc.add_heading("PROFESSIONAL SUMMARY", level=1)
+    doc.add_paragraph(resume_text)
+    
+    doc.add_heading("EDUCATION", level=1)
+    doc.add_paragraph(education)
+    
+    doc.add_heading("SKILLS", level=1)
+    doc.add_paragraph(skills.replace(',', '\n'))
+    
+    doc.add_heading("EXPERIENCE", level=1)
+    doc.add_paragraph(experience.replace(',', '\n'))
+    
+    doc_output = BytesIO()
+    doc.save(doc_output)
+    doc_output.seek(0)
+
+    return doc_output
+
 # Streamlit interface
 def main():
     st.title("ATS OPTIMIZED RESUME GENERATOR")
@@ -103,20 +133,25 @@ def main():
     
     # Add Job Description Input (Optional)
     job_description = st.text_area("Job Description (Optional)", key="job_description")
+    
+    # File format and background color selection
+    file_format = st.selectbox("Select File Format", ["PDF", "DOCX"], key="file_format")
+    background_color = st.selectbox("Select Resume Background Color", ["white", "light grey", "blue"], key="background_color")
 
     # Button to generate resume
     if st.button("Generate Resume", key="generate_resume"):
         if name and job_role and education and skills and experience and phone and email and linkedin and address:
-            # Generate the resume text
             resume_text = generate_resume(name, job_role, education, skills, experience, job_description)
 
-            # Display generated resume
             st.subheader("Generated Resume")
             st.write(resume_text)
 
-            # Export option
-            pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
-            st.download_button(f"Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
+            if file_format == "PDF":
+                pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address, background_color)
+                st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
+            else:
+                docx_output = export_to_docx(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
+                st.download_button("Download Resume", docx_output, file_name=f"{name}_Resume.docx")
         else:
             st.error("Please fill in all fields to generate a resume.")
 
