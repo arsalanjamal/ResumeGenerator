@@ -94,7 +94,26 @@ def main():
     # Collect user information
     st.header("Enter Your Information")
     name = st.text_input("Full Name", key="name")
-    job_role = st.text_input("Job Role", key="job_role")
+    
+    # Job role selection dropdown
+    job_roles = [
+        "Software Engineer", "Data Scientist", "Web Developer", "Cybersecurity Analyst", 
+        "Database Administrator", "Network Engineer", "UX/UI Designer", "DevOps Engineer", 
+        "Machine Learning Engineer", "Cloud Architect", 
+        "Physician", "Registered Nurse", "Pharmacist", "Medical Assistant", "Physical Therapist", 
+        "Occupational Therapist", "Medical Coder", "Medical Biller", "Radiology Technician", 
+        "Healthcare Administrator", 
+        "Financial Analyst", "Accountant", "Actuary", "Investment Banker", "Stockbroker", 
+        "Underwriter", "Compliance Officer", "Risk Manager", "Auditor", "Financial Advisor", 
+        "Production Manager", "Quality Control Inspector", "Manufacturing Engineer", 
+        "Industrial Engineer", "Maintenance Technician", "Supply Chain Manager", "Production Line Worker", 
+        "Robotics Technician", "Logistics Coordinator", "Quality Assurance Manager", 
+        "Teacher", "Professor", "School Counselor", "Principal", "Superintendent", 
+        "Special Education Teacher", "Librarian", "Curriculum Developer", "Educational Psychologist", 
+        "Early Childhood Educator"
+    ]
+    job_role = st.selectbox("Job Role", job_roles, key="job_role")
+    
     education = st.text_input("Education (e.g., BSc in Computer Science)", key="education")
     skills = st.text_area("Skills (e.g., Python, JavaScript, etc.)", key="skills")
     experience = st.text_area("Experience (e.g., 2 years as Software Developer)", key="experience")
