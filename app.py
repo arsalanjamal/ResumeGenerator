@@ -7,6 +7,9 @@ import re
 # Load pre-trained model for resume generation
 pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generation")
 
+# Load model for generating mock interview questions
+pipe_questions = pipeline("text-generation", model="gpt2")  # Replace with a specialized question generation model if available
+
 # Function to extract keywords from the job description
 def extract_keywords(job_description):
     keywords = set(re.findall(r'\b\w+\b', job_description.lower()))
@@ -25,11 +28,11 @@ def generate_resume(name, job_role, education, skills, experience, job_descripti
     return resume
 
 # Function to generate mock interview questions
-def generate_mock_interview(job_role):
-    # Customize input for generating interview questions
-    interview_prompt = f"Generate 100 mock interview questions for a job role of {job_role}."
-    interview_questions = pipe_resume(interview_prompt)[0]['generated_text']
-    return interview_questions
+def generate_mock_interview_questions(job_role):
+    prompt = f"Generate 100 mock interview questions for a {job_role} position."
+    questions = pipe_questions(prompt, max_length=80, num_return_sequences=100)
+    question_list = [q['generated_text'].strip() for q in questions]
+    return question_list
 
 # Function to export the resume to a professional PDF
 def export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address):
@@ -123,21 +126,19 @@ def main():
 
             # Export option
             pdf_output = export_to_pdf(name, job_role, resume_text, education, skills, experience, phone, email, linkedin, address)
-            st.download_button("Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
+            st.download_button(f"Download Resume", pdf_output, file_name=f"{name}_Resume.pdf")
         else:
             st.error("Please fill in all fields to generate a resume.")
 
-    # Option to generate mock interview questions
-    if st.button("Generate Mock Interview Questions", key="generate_mock_interview"):
+    # Section for generating mock interview questions
+    if st.button("Generate Mock Interview Questions", key="generate_questions"):
         if job_role:
-            # Generate mock interview questions
-            interview_questions = generate_mock_interview(job_role)
-            
-            # Display mock interview questions
-            st.subheader("Mock Interview Questions")
-            st.write(interview_questions)
+            st.subheader(f"Mock Interview Questions for {job_role}")
+            questions = generate_mock_interview_questions(job_role)
+            for i, question in enumerate(questions, 1):
+                st.write(f"{i}. {question}")
         else:
-            st.error("Please specify the Job Role to generate mock interview questions.")
+            st.error("Please enter a job role to generate mock interview questions.")
 
 if __name__ == "__main__":
     main()
