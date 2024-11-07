@@ -7,15 +7,12 @@ import re
 # Load pre-trained model for resume generation
 pipe_resume = pipeline("text2text-generation", model="nakamoto-yama/t5-resume-generation")
 
-# Function to extract keywords from the job description
-def extract_keywords(job_description):
-    keywords = set(re.findall(r'\b\w+\b', job_description.lower()))
-    return keywords
-
 # Function to generate the resume
 def generate_resume(name, job_role, education, skills, experience, job_description):
-    keywords = extract_keywords(job_description)
-    input_text = f"Generate a detailed, ATS-optimized professional summary for a {job_role}. The person’s name is {name}. They have {education} and {experience}. They possess skills in {skills}. Focus on their accomplishments such as {', '.join(keywords)}."
+    # Construct a detailed input prompt for the model
+    input_text = f"Generate a detailed, ATS-optimized professional summary for a {job_role}. The person’s name is {name}. They have {education} and {experience}. They possess skills in {skills}. Focus on their accomplishments and expertise in {job_description}. Generate a concise and impactful professional summary that highlights their experience and qualifications."
+    
+    # Use the model to generate the professional summary
     resume = pipe_resume(input_text)[0]['generated_text']
     return resume
 
